@@ -114,7 +114,7 @@ graph TB
         subgraph Apps["亮点业务与板端 APP (Application Layer)"]
             APP_UI["🖥️ UI 渲染应用<br/>• 240x240 ST7789 LCD 彩屏<br/>• Framebuffer 显存实时刷新<br/>• 硬件状态监控 / 复古终端 UI"]
             APP_AUDIO["🎵 音频语音应用<br/>• 片上 Audio Codec 驱动<br/>• 扬声器音频播报 / 麦克风录音<br/>• 系统提示音 / 交互音效"]
-            APP_NET["🌐 网络与远程调试应用<br/>• USB RNDIS 虚拟网卡<br/>• LwIP TCP/IP 协议栈<br/>• 轻量 HTTP/HTTPS 服务"]
+            APP_NET["🌐 核心服务 APP (app/hello_app)<br/>• 基于 Mbed TLS 3.4.0 的 HTTPS 服务器 (httpsd)<br/>• SD卡 (/mnt) 静态Web宿主 (支持 Range 断点续传与 WASM)<br/>• 适配 v86-toy 宿主运行，rcS 自动化就绪拉起"]
             APP_CONSOLE["💻 多路交互控制台<br/>• CDC ACM USB 虚拟串口 (/dev/ttyACM0)<br/>• ADB 调试服务 (远程传输 / Shell)<br/>• UART0 硬件串口调试通道"]
             APP_OTA["⚡ 免拆机无感 OTA 组件<br/>• 软件触发 reboot bootloader<br/>• 配合 BL 实现秒级固件热切换"]
         end

@@ -4,7 +4,40 @@
 #
 
 config LVX_USE_DEMO_CONTEST2026_000_HELLO_APP
-	bool "Contest 2026 team 000 hello app"
+	bool "Contest 2026 team 499 - HTTPS Web Service App"
 	default n
+	depends on CRYPTO_MBEDTLS && NET_TCP
+	select MBEDTLS_NET_C
+	select LIBC_NETDB
 	---help---
-		Enable the contest 2026 team 000 hello app demo.
+		Enable the contest 2026 team 499 HTTPS Web Service application.
+		Provides high-performance TLS/HTTPS static web serving from /mnt
+		over RNDIS (https://10.0.0.2) supporting WASM, streaming,
+		HTTP range requests, and cross-origin isolation headers.
+
+if LVX_USE_DEMO_CONTEST2026_000_HELLO_APP
+
+config EXAMPLES_HTTPSD
+	bool "Export CONFIG_EXAMPLES_HTTPSD compatibility flag"
+	default y
+	---help---
+		Exports CONFIG_EXAMPLES_HTTPSD to trigger automatic service
+		launch in /etc/init.d/rcS.
+
+config CONTEST2026_499_HTTPSD_PROGNAME
+	string "Program name"
+	default "httpsd"
+
+config CONTEST2026_499_HTTPSD_PRIORITY
+	int "Task priority"
+	default 100
+
+config CONTEST2026_499_HTTPSD_STACKSIZE
+	int "Stack size"
+	default 16384
+
+config EXAMPLES_HTTPSD_PORT
+	int "HTTPS server port"
+	default 443
+
+endif
