@@ -28,10 +28,6 @@ ifconfig eth0 10.0.0.2 netmask 255.255.255.0
 dhcpd_start eth0
 #endif
 
-#ifdef CONFIG_EXAMPLES_HTTPSD
-httpsd &
-#endif
-
 #ifdef CONFIG_FS_LITTLEFS
 mkdir -p /data
 #endif
@@ -39,6 +35,10 @@ mkdir -p /data
 #ifdef CONFIG_F1C100S_SDIO
 mkdir -p /mnt
 mount -t vfat /dev/mmcsd0 /mnt
+#endif
+
+#if defined(CONFIG_EXAMPLES_HTTPSD) || defined(CONFIG_LVX_USE_DEMO_CONTEST2026_000_HELLO_APP)
+httpsd &
 #endif
 
 #ifdef CONFIG_EXAMPLES_WEBSERVER
