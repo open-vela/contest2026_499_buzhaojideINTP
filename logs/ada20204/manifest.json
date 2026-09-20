@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0",
+  "team_id": "contest2026_499_buzhaojideINTP",
+  "github_login": "ada20204",
+  "generator": "claude-code-collector@1.3.0",
+  "updated_at": "2026-09-20T14:09:12.647125+00:00",
+  "sessions": [
+    {
+      "session_id": "046d749c-34c9-4a37-af35-7d40eea4808b",
+      "tool": "claude-code",
+      "started_at": "2026-09-20T14:05:29.418Z",
+      "last_event_at": "2026-09-20T14:05:29.418Z",
+      "event_count": 2,
+      "raw_event_count": 24,
+      "file_path": "logs/ada20204/2026-09-20/claude-code__046d749c-34c9-4a37-af35-7d40eea4808b.jsonl",
+      "collection_mode": "cli",
+      "health": "ok",
+      "model": "<synthetic>"
+    },
+    {
+      "session_id": "5b2b3db4-a0c5-431d-972a-08bde8ed8274",
+      "tool": "claude-code",
+      "started_at": "2026-09-20T14:05:29.490Z",
+      "last_event_at": "2026-09-20T14:05:29.490Z",
+      "event_count": 6,
+      "raw_event_count": 40,
+      "file_path": "logs/ada20204/2026-09-20/claude-code__5b2b3db4-a0c5-431d-972a-08bde8ed8274.jsonl",
+      "collection_mode": "cli",
+      "health": "ok",
+      "model": "claude-sonnet-5"
+    },
+    {
+      "session_id": "d0a69704-761f-4fe9-a559-d3d621b0705d",
+      "tool": "claude-code",
+      "started_at": "2026-09-20T14:05:29.597Z",
+      "last_event_at": "2026-09-20T14:05:29.597Z",
+      "event_count": 278,
+      "raw_event_count": 486,
+      "file_path": "logs/ada20204/2026-09-20/claude-code__d0a69704-761f-4fe9-a559-d3d621b0705d.jsonl",
+      "collection_mode": "cli",
+      "health": "ok",
+      "model": "claude-opus-5"
+    },
+    {
+      "session_id": "d3385a89-40e0-42d9-bcf1-c5d5516894cb",
+      "tool": "claude-code",
+      "started_at": "2026-09-20T14:05:29.689Z",
+      "last_event_at": "2026-09-20T14:05:29.689Z",
+      "event_count": 52,
+      "raw_event_count": 229,
+      "file_path": "logs/ada20204/2026-09-20/claude-code__d3385a89-40e0-42d9-bcf1-c5d5516894cb.jsonl",
+      "collection_mode": "cli",
+      "health": "ok",
+      "model": "claude-sonnet-5"
+    },
+    {
+      "session_id": "b228ed4b-3a2a-4783-9fb0-eb04d3bb97a7",
+      "tool": "claude-code",
+      "started_at": "2026-09-20T14:05:32.689Z",
+      "last_event_at": "2026-09-20T14:05:32.689Z",
+      "event_count": 9885,
+      "raw_event_count": 46775,
+      "file_path": "logs/ada20204/2026-09-20/claude-code__b228ed4b-3a2a-4783-9fb0-eb04d3bb97a7.jsonl",
+      "collection_mode": "cli",
+      "health": "ok",
+      "model": "<synthetic>"
+    },
+    {
+      "session_id": "ccd4e6f3-06d5-46c5-b171-292ce0b75f5c",
+      "tool": "claude-code",
+      "started_at": "2026-09-20T14:05:36.822Z",
+      "last_event_at": "2026-09-20T14:05:36.822Z",
+      "event_count": 18576,
+      "raw_event_count": 50698,
+      "file_path": "logs/ada20204/2026-09-20/claude-code__ccd4e6f3-06d5-46c5-b171-292ce0b75f5c.jsonl",
+      "collection_mode": "cli",
+      "health": "ok",
+      "model": "claude-sonnet-5"
+    },
+    {
+      "session_id": "e2e60aea-7242-4f88-9246-73651b42bdc2",
+      "tool": "claude-code",
+      "started_at": "2026-09-20T14:05:37.419Z",
+      "last_event_at": "2026-09-20T14:05:37.419Z",
+      "event_count": 1,
+      "raw_event_count": 30,
+      "file_path": "logs/ada20204/2026-09-20/claude-code__e2e60aea-7242-4f88-9246-73651b42bdc2.jsonl",
+      "collection_mode": "cli",
+      "health": "ok"
+    },
+    {
+      "session_id": "b87e3909-f3d5-4df9-bdf4-f2865f7d9557",
+      "tool": "opencode",
+      "started_at": "2026-09-10T16:57:02Z",
+      "last_event_at": "2026-09-20T14:09:04Z",
+      "event_count": 16568,
+      "raw_event_count": 17007,
+      "file_path": "logs/ada20204/2026-09-20/opencode__b87e3909-f3d5-4df9-bdf4-f2865f7d9557.jsonl",
+      "collection_mode": "cli",
+      "health": "ok",
+      "model": "gemini-3.8-flash"
+    }
+  ]
+}
