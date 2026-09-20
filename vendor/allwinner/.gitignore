@@ -1,0 +1,39 @@
+# 1. 编译对象与静态库（保留 firmware/ 和 tools/ 的 .bin）
+*.o
+*.a
+libboard.a
+
+# 2. 编译器依赖文件（关键避坑：不能误杀 etc/init.d 脚本目录）
+*.d
+*.dep
+.depend
+Make.dep
+!**/init.d/
+!**/init.d/**
+
+# 3. NuttX ROMFS 板级中间生成物 (Board.mk ETCDIR)
+etctmp*
+romfs.img
+
+# 4. 构建过程与 Kconfig 上下文标记
+.built
+.context
+.kconfig
+/Kconfig
+apps/Kconfig
+
+# 5. 编译预处理与堆栈分析
+*.i
+*.su
+
+# 6. Host 工具 Python 字节码缓存
+__pycache__/
+*.pyc
+
+# 7. 编辑器临时文件与索引
+*~
+*.swp
+.*.swp
+tags
+TAGS
+cscope.*

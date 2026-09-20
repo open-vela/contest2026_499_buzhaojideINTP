@@ -1,0 +1,1007 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+if ARCH_CHIP_CUSTOM
+
+comment "Allwinner F1C100s Configuration Options"
+
+choice
+	prompt "Allwinner F1C100s Chip Selection"
+	default ARCH_CHIP_F1C100S
+
+config ARCH_CHIP_F1C100S
+	bool "F1C100s"
+	select ARCH_ARM926EJS
+	select ARCH_HAVE_MMU
+	select ARCH_USE_MMU
+	select ARCH_HAVE_LOWVECTORS
+	select ARCH_LOWVECTORS
+	select ARCH_HAVE_RESET
+	---help---
+		Allwinner F1C100s ARM926EJ-S SoC with 32MB integrated DDR
+
+endchoice
+
+menu "F1C100s Peripheral Selection"
+
+config F1C100S_UART0
+	bool "UART0"
+	default y
+	select UART0_SERIALDRIVER
+	---help---
+		Enable UART0 serial port
+
+config F1C100S_UART1
+	bool "UARTConfiguration 1"
+	default n
+	select UART1_SERIALDRIVER
+	---help---
+		Enable UART1 serial port
+
+config F1C100S_UART2
+	bool "UART2"
+	default n
+	select UART2_SERIALDRIVER
+	---help---
+		Enable UART2 serial port
+
+config F1C100S_SPI0
+	bool "SPI0"
+	default n
+	select SPI
+	---help---
+		Enable SPI0 controller
+
+config F1C100S_SPI1
+	bool "SPI1"
+	default n
+	select SPI
+	---help---
+		Enable SPI1 controller
+
+config F1C100S_I2C0
+	bool "I2C0 (TWI0)"
+	default n
+	select I2C
+	---help---
+		Enable I2C0/TWI0 controller
+
+config F1C100S_I2C1
+	bool "I2C1 (TWI1)"
+	default n
+	select I2C
+	---help---
+		Enable I2C1/TWI1 controller
+
+config F1C100S_I2C2
+	bool "I2C2 (TWI2)"
+	default n
+	select I2C
+	---help---
+		Enable I2C2/TWI2 controller
+
+config F1C100S_SDIO
+	bool "SDIO/SD/MMC"
+	default n
+	select MMCSD
+	select MMCSD_SDIO
+	select SDIO_BLOCKSETUP
+	select ARCH_HAVE_SDIO
+	---help---
+		Enable SDIO/SD/MMC controller (SDC0)
+
+config F1C100S_AUDIO
+	bool "Audio Codec"
+	default n
+	select AUDIO
+	select F1C100S_DMA
+	---help---
+		Enable internal Audio Codec
+
+config F1C100S_DMA
+	bool "DMA Support"
+	default n
+	---help---
+		Enable DMA controller support (NDMA/DDMA)
+
+config F1C100S_WDT
+	bool "Watchdog Timer"
+	default n
+	select WATCHDOG
+	---help---
+		Enable Watchdog Timer support.
+		WATCHDOG_AUTOMONITOR is intentionally not auto-selected:
+		this board's JTAG cable has no SRST/nRST line, so a debug
+		halt is indistinguishable from a hang to the watchdog.
+		An automonitor timeout during a JTAG halt resets the whole
+		board, dropping back to whatever firmware the boot media
+		actually holds. Enable WATCHDOG_AUTOMONITOR explicitly only
+		once JTAG is no longer needed for development.
+
+if F1C100S_WDT
+
+config F1C100S_WDT_TIMEOUT_MS
+	int "Watchdog timeout (ms)"
+	default 5000
+	range 500 16000
+	---help---
+		Hardware WDT interval. The feed period must be shorter.
+
+config F1C100S_WDT_FEED_MS
+	int "Watchdog feed period (ms)"
+	default 2000
+	range 100 8000
+	---help---
+		Periodic keepalive. Must be less than F1C100S_WDT_TIMEOUT_MS.
+
+endif # F1C100S_WDT
+
+config F1C100S_BL_WAIT_SEC
+	int "BL fastboot wait timeout (seconds)"
+	default 60
+	range 5 600
+	---help---
+		How long BL waits for a host fastboot connection before
+		trying the current AP anyway (spec §2 / §5).
+
+config F1C100S_FB
+	bool "Framebuffer (LCD/TV)"
+	default n
+	select FB
+	---help---
+		Enable framebuffer driver for LCD/TV output.
+		Supports TFT LCD (via TCON0) and TV (PAL/NTSC via TCON1+TVE).
+
+config F1C100S_PWM
+	bool "PWM Controller"
+	default n
+	select PWM
+	---help---
+		Enable PWM controller support.
+		F1C100s has 2 PWM channels (PWM0 on PE12, PWM1 on PE6).
+
+config F1C100S_ONESHOT
+	bool "Oneshot Timer"
+	default n
+	select ONESHOT
+	---help---
+		Enable Oneshot Timer driver using Timer1.
+		Provides user-space timer via /dev/timer0.
+
+if F1C100S_PWM
+
+config F1C100S_PWM0
+	bool "PWM Channel 0"
+	default y
+	---help---
+		Enable PWM channel 0. Pin is selected below.
+
+if F1C100S_PWM0
+
+choice
+	prompt "PWM0 Pin Selection"
+	default F1C100S_PWM0_PA2 if F1C100S_I2C0_PE
+	default F1C100S_PWM0_PE12
+	---help---
+		F1C100S UM section 4.2.3: PWM0 is available as an alternate
+		function on two pins. PE12 also carries I2C0's SDA when
+		F1C100S_I2C0_PE is selected (see that choice's help text) -
+		pick PA2 on boards that need both PWM0 and I2C0 on Port E.
+
+config F1C100S_PWM0_PA2
+	bool "PA2 (Function 3)"
+	---help---
+		Avoids the PE12 conflict with F1C100S_I2C0_PE.
+
+config F1C100S_PWM0_PE12
+	bool "PE12 (Function 4)"
+	---help---
+		Conflicts with F1C100S_I2C0_PE (I2C0 SDA also on PE12).
+		Only select this if I2C0 is off, or routed to PD0/PD12
+		instead (F1C100S_I2C0_PD).
+
+endchoice
+
+endif # F1C100S_PWM0
+
+config F1C100S_PWM1
+	bool "PWM Channel 1 (PE6)"
+	default n
+	---help---
+		Enable PWM channel 1 on PE6.
+
+endif # F1C100S_PWM
+
+menu "USB Support"
+
+config F1C100S_USB
+	bool "Enable USB Controller"
+	default n
+	---help---
+		Enable the F1C100s USB OTG controller.
+
+if F1C100S_USB
+
+choice
+	prompt "USB Mode"
+	default F1C100S_USBDEV
+
+config F1C100S_USBDEV
+	bool "USB Device Mode"
+	select USBDEV
+	---help---
+		Enable USB Device mode. The F1C100s will act as a USB peripheral.
+
+config F1C100S_USBHOST
+	bool "USB Host Mode"
+	select USBHOST
+	select USBHOST_HAVE_ASYNCH
+	---help---
+		Enable USB Host mode. The F1C100s will act as a USB host controller.
+
+endchoice
+
+if F1C100S_USBDEV
+
+config F1C100S_USBDEV_HIGHSPEED
+	bool "High Speed (480 Mbps)"
+	default y
+	select USBDEV_DUALSPEED
+	---help---
+		y: High Speed 480 Mbps. Bulk wMaxPacket=512, PHY HSENAB.
+		   Use this for RNDIS (network), ADB, or Fastboot — each
+		   alone fits in the 2KB FIFO (RNDIS ~1104 bytes).
+		n: Full Speed 12 Mbps, bulk wMaxPacket=64.
+
+		Do not set HSENAB without this option: Linux then sees
+		64-byte bulk at 480 Mbps (invalid maxpacket).
+
+choice F1C100S_USBDEV_FUNCTION
+	prompt "USB device function"
+	default F1C100S_USB_ADB
+	optional
+	---help---
+		Only EP1-EP3 take bulk/interrupt on this silicon (EP4/EP5
+		bulk is EPROTO/EPIPE). Pick one function. High Speed is
+		valid for every option below.
+
+config F1C100S_USB_ADB
+	bool "ADB (EP1 IN + EP2 OUT)"
+	select USBADB
+	---help---
+		2 endpoints. High Speed OK.
+
+config F1C100S_USB_RNDIS
+	bool "RNDIS network (EP1 INT + EP2 IN + EP3 OUT)"
+	select RNDIS
+	---help---
+		3 endpoints. High Speed OK — this is the network gadget.
+
+config F1C100S_USB_NET
+	bool "Dynamic Network (RNDIS / CDC-ECM via /data/net_mode)"
+	select RNDIS
+	select NET_CDCECM
+	---help---
+		3 endpoints. Dynamically switches between RNDIS (Windows/Linux)
+		and CDC-ECM (macOS/Linux) based on /data/net_mode.
+
+config F1C100S_USB_FASTBOOT
+	bool "Fastboot (EP1 IN + EP2 OUT)"
+	select USBADB
+	select USBFASTBOOT
+	---help---
+		2 endpoints. High Speed OK. BL uses this.
+
+config F1C100S_USB_CDCACM
+	bool "CDC ACM (EP1 INT + EP2 IN + EP3 OUT)"
+	select CDCACM
+	---help---
+		3 endpoints. High Speed OK.
+
+config F1C100S_USB_MSC
+	bool "Mass Storage (EP1 IN + EP2 OUT)"
+	select USBMSC
+	---help---
+		2 endpoints. High Speed OK.
+
+endchoice
+
+config F1C100S_USB_COMPOSITE
+	bool
+	default n
+	select USBDEV_COMPOSITE
+	select CDCACM_COMPOSITE if F1C100S_USB_CDCACM
+	select USBADB_COMPOSITE if F1C100S_USB_ADB
+	select RNDIS_COMPOSITE if F1C100S_USB_RNDIS
+	---help---
+		Left off: EP1-EP3 only hold one function, so gadgets
+		run standalone (cdcacm_initialize / usbdev_adb_initialize /
+		usbdev_rndis_initialize).
+
+endif # F1C100S_USBDEV
+
+if F1C100S_USBHOST
+
+config F1C100S_USBHOST_HUB
+	bool "USB Hub Support"
+	default y
+	select USBHOST_HUB
+	---help---
+		Enable USB Hub support to connect multiple devices.
+
+config F1C100S_USBHOST_PRIO
+	int "USB Host Waiter Thread Priority"
+	default 100
+	---help---
+		Priority of the USB host waiter thread.
+
+config F1C100S_USBHOST_STACKSIZE
+	int "USB Host Waiter Thread Stack Size"
+	default 2048
+	---help---
+		Stack size for the USB host waiter thread.
+
+config F1C100S_USBHOST_VBUS_DETECT
+	bool "VBUS Detection via GPIO"
+	default n
+	depends on DEV_GPIO && SCHED_HPWORK
+	---help---
+		Enable VBUS detection using an external GPIO pin.
+		When enabled, device connection is detected via GPIO interrupt
+		instead of relying solely on the USB controller's internal detection.
+
+if F1C100S_USBHOST_VBUS_DETECT
+
+config F1C100S_USBHOST_VBUS_DEVPATH
+	string "VBUS Detection GPIO Device Path"
+	default "/dev/gpio_usb_det"
+	---help---
+		Path to the GPIO device used for VBUS detection.
+		This GPIO should be connected to the USB VBUS detect signal.
+
+config F1C100S_USBHOST_VBUS_INVERTED
+	bool "VBUS Detection Signal Inverted"
+	default n
+	---help---
+		Set this if the VBUS detection signal is active low.
+		Normal: High = device connected, Low = disconnected
+		Inverted: Low = device connected, High = disconnected
+
+endif # F1C100S_USBHOST_VBUS_DETECT
+
+endif # F1C100S_USBHOST
+
+endif # F1C100S_USB
+
+endmenu
+
+endmenu
+
+menu "F1C100s SPI Configuration"
+	depends on F1C100S_SPI0 || F1C100S_SPI1
+
+config F1C100S_SPI_DMA
+	bool "SPI DMA Support"
+	default y
+	depends on F1C100S_DMA
+	---help---
+		Enable DMA support for SPI transfers.
+		Transfers larger than 16 bytes will automatically use DMA.
+
+config F1C100S_SPI_DMA_SG
+	bool "SPI Scatter-Gather DMA"
+	default n
+	depends on F1C100S_SPI_DMA
+	select F1C100S_DMA_SG
+	---help---
+		Enable scatter-gather for SPI transfers.
+		Useful for protocol headers + data transfers.
+
+config F1C100S_SPI_DMA_THRESHOLD
+	int "SPI DMA Threshold (bytes)"
+	default 16
+	depends on F1C100S_SPI_DMA
+	---help---
+		Minimum transfer size to trigger DMA usage.
+		Smaller transfers will use PIO mode.
+
+endmenu
+
+menu "F1C100S I2C Configuration"
+	depends on F1C100S_I2C0 || F1C100S_I2C1 || F1C100S_I2C2
+
+if F1C100S_I2C0
+
+choice
+	prompt "I2C0 Pin Selection"
+	default F1C100S_I2C0_PE
+	---help---
+		Select which pin group to use for I2C0 (TWI0).
+
+config F1C100S_I2C0_PE
+	bool "Port E: PE11/PE12 (SCK: PE11, SDA: PE12)"
+	---help---
+		Use PE11 (TWI0_SCK, Func 3) and PE12 (TWI0_SDA, Func 3).
+		Default choice. Avoids pin conflict with LCD RGB signals (PD0-PD21)
+		when framebuffer (CONFIG_F1C100S_FB) is enabled.
+		NOTE: PE12 is also used by PWM0 (Func 4). If CONFIG_F1C100S_PWM0 is
+		enabled, a pinmux conflict will occur on PE12.
+
+config F1C100S_I2C0_PD
+	bool "Port D: PD12/PD0 (SCK: PD12, SDA: PD0)"
+	---help---
+		Use PD12 (TWI0_SCK, Func 3) and PD0 (TWI0_SDA, Func 3).
+		WARNING: Conflicts with LCD RGB signals (PD0-PD21) when
+		CONFIG_F1C100S_FB is enabled.
+
+endchoice
+
+endif # F1C100S_I2C0
+
+config F1C100S_I2C_INTERRUPTS
+	bool "I2C Interrupt Mode"
+	default y
+	---help---
+		Enable interrupt-driven I2C transfers with state machine.
+		Significantly reduces CPU usage compared to polling mode.
+
+config F1C100S_I2C_TIMEOUT_MS
+	int "I2C Transfer Timeout (ms)"
+	default 20
+	---help---
+		Timeout for I2C transfers in milliseconds.
+		Lower values speed up I2C bus scanning but may cause issues with slow devices.
+
+endmenu
+
+menu "F1C100s SDIO Configuration"
+	depends on F1C100S_SDIO
+
+config F1C100S_SDIO_DMA
+	bool "SDIO DMA Support"
+	default y
+	select SDIO_DMA
+	---help---
+		Enable IDMAC (Internal DMA) for SDIO transfers.
+		Greatly improves SD card read/write performance.
+
+config F1C100S_SDIO_WIDTH_D1_ONLY
+	bool "SDIO 1-bit Mode Only"
+	default n
+	---help---
+		Restrict SDIO to 1-bit data width.
+		Enable this if 4-bit mode causes issues.
+
+config F1C100S_SDIO_DMADEBUG
+	bool "SDIO DMA Debug"
+	default n
+	depends on F1C100S_SDIO_DMA && DEBUG_FEATURES
+	---help---
+		Enable debug output for SDIO DMA operations
+
+config F1C100S_SDIO_CARDDETECT
+	bool "SD Card Detection (Hot-plug)"
+	default n
+	depends on DEV_GPIO
+	select MMCSD_HAVE_CARDDETECT
+	---help---
+		Enable SD card hot-plug detection using GPIO.
+		When enabled, the system can detect card insertion and removal
+		at runtime without rebooting.
+
+config F1C100S_SDIO_CD_DEVPATH
+	string "Card Detect GPIO Device Path"
+	default "/dev/gpio0"
+	depends on F1C100S_SDIO_CARDDETECT
+	---help---
+		The device path of the GPIO pin used for card detection.
+		Example: /dev/gpio0, /dev/gpioCD, etc.
+
+config F1C100S_SDIO_CD_INVERTED
+	bool "Card Detect Signal Inverted"
+	default n
+	depends on F1C100S_SDIO_CARDDETECT
+	---help---
+		Set this if the card detect signal is inverted.
+		Normal: Low = card inserted, High = card removed
+		Inverted: High = card inserted, Low = card removed
+
+endmenu
+
+menu "F1C100s Audio Configuration"
+	depends on F1C100S_AUDIO
+
+config F1C100S_AUDIO_DMA
+	bool "Audio DMA Support"
+	default y
+	depends on F1C100S_DMA
+	---help---
+		Enable DMA for audio playback and recording.
+		Provides continuous audio with automatic buffer chaining.
+
+config F1C100S_AUDIO_DMA_CHAIN
+	bool "Audio DMA Chain Mode"
+	default n
+	depends on F1C100S_AUDIO_DMA
+	select F1C100S_DMA_CHAIN
+	---help---
+		Use descriptor chain for continuous audio playback.
+		Reduces CPU overhead for buffer switching.
+
+config F1C100S_AUDIO_NUM_BUFFERS
+	int "Number of Audio Buffers"
+	default 4
+	range 2 8
+	---help---
+		Number of audio buffers for DMA operation
+
+config F1C100S_AUDIO_BUFFER_SIZE
+	int "Audio Buffer Size (bytes)"
+	default 4096
+	range 1024 16384
+	---help---
+		Size of each audio buffer
+
+endmenu
+
+menu "F1C100s DMA Configuration"
+	depends on F1C100S_DMA
+
+config F1C100S_DMA_CHAIN
+	bool "DMA Descriptor Chain Support"
+	default n
+	---help---
+		Enable software descriptor chain for linked DMA transfers.
+		Allows multiple transfers to execute sequentially without
+		CPU intervention between transfers.
+
+config F1C100S_DMA_SG
+	bool "DMA Scatter-Gather Support"
+	default n
+	depends on F1C100S_DMA_CHAIN
+	---help---
+		Enable scatter-gather DMA transfers.
+		Allows transferring data between multiple non-contiguous
+		memory regions in a single operation.
+		Requires descriptor chain support.
+
+config F1C100S_DMA_NDMA_CHANNELS
+	int "Number of NDMA Channels"
+	default 4
+	range 1 4
+	---help---
+		Number of Normal DMA channels to support (1-4)
+
+config F1C100S_DMA_DDMA_CHANNELS
+	int "Number of DDMA Channels"
+	default 4
+	range 1 4
+	---help---
+		Number of Dedicated DMA channels to support (1-4)
+
+config F1C100S_DMA_DEBUG
+	bool "DMA Debug Output"
+	default n
+	depends on DEBUG_FEATURES
+	---help---
+		Enable debug output for DMA operations
+
+endmenu
+
+menu "F1C100s Framebuffer Configuration"
+	depends on F1C100S_FB
+
+choice
+	prompt "LCD Resolution"
+	default F1C100S_FB_480x272
+
+config F1C100S_FB_320x240
+	bool "320x240 (QVGA, 2.4-3.5 inch)"
+
+config F1C100S_FB_480x272
+	bool "480x272 (4.3 inch)"
+
+config F1C100S_FB_640x480
+	bool "640x480 (VGA)"
+
+config F1C100S_FB_800x480
+	bool "800x480 (5-7 inch)"
+
+config F1C100S_FB_1024x600
+	bool "1024x600 (10.1 inch)"
+
+config F1C100S_FB_CUSTOM
+	bool "Custom resolution"
+
+endchoice
+
+config F1C100S_FB_WIDTH
+	int "LCD Width (pixels)"
+	default 320 if F1C100S_FB_320x240
+	default 480 if F1C100S_FB_480x272
+	default 640 if F1C100S_FB_640x480
+	default 800 if F1C100S_FB_800x480
+	default 1024 if F1C100S_FB_1024x600
+	default 480
+
+config F1C100S_FB_HEIGHT
+	int "LCD Height (pixels)"
+	default 240 if F1C100S_FB_320x240
+	default 272 if F1C100S_FB_480x272
+	default 480 if F1C100S_FB_640x480
+	default 480 if F1C100S_FB_800x480
+	default 600 if F1C100S_FB_1024x600
+	default 272
+
+config F1C100S_FB_HFP
+	int "Horizontal front porch (pixels)"
+	default 2 if F1C100S_FB_480x272
+	default 40 if F1C100S_FB_800x480
+	default 8
+	---help---
+		Horizontal front porch (HFP) in pixels/dclk.
+
+config F1C100S_FB_HBP
+	int "Horizontal back porch (pixels)"
+	default 2 if F1C100S_FB_480x272
+	default 87 if F1C100S_FB_800x480
+	default 16
+	---help---
+		Horizontal back porch (HBP) in pixels/dclk.
+
+config F1C100S_FB_HSW
+	int "Horizontal sync width (pixels)"
+	default 41 if F1C100S_FB_480x272
+	default 1 if F1C100S_FB_800x480
+	default 1
+	---help---
+		Horizontal sync width (HSW) in pixels/dclk.
+
+config F1C100S_FB_VFP
+	int "Vertical front porch (lines)"
+	default 2 if F1C100S_FB_480x272
+	default 13 if F1C100S_FB_800x480
+	default 4
+	---help---
+		Vertical front porch (VFP) in lines.
+
+config F1C100S_FB_VBP
+	int "Vertical back porch (lines)"
+	default 2 if F1C100S_FB_480x272
+	default 31 if F1C100S_FB_800x480
+	default 8
+	---help---
+		Vertical back porch (VBP) in lines.
+
+config F1C100S_FB_VSW
+	int "Vertical sync width (lines)"
+	default 10 if F1C100S_FB_480x272
+	default 3 if F1C100S_FB_800x480
+	default 1
+	---help---
+		Vertical sync width (VSW) in lines.
+
+config F1C100S_FB_PLL
+	hex "PLL_VIDEO_CTRL register value"
+	default 0x80000800 if F1C100S_FB_480x272
+	default 0x81004107 if F1C100S_FB_800x480
+	default 0x80000800
+	---help---
+		PLL_VIDEO control register (0x01c20010).
+		Integer mode: bit31 enable, N in [14:8] (encoded N-1),
+		M in [3:0] (encoded M-1). Bit24 is FRAC enable (270/297 MHz)
+		and must stay clear for the 216 MHz 480x272 clock.
+		Default for 480x272: 0x80000800 (24 MHz * 9 / 1 = 216 MHz).
+		Default for 800x480: 0x81004107 (~198 MHz).
+
+config F1C100S_FB_CLKDIV
+	int "Dot clock divider (DCLK = PLL / CLKDIV)"
+	default 24 if F1C100S_FB_480x272
+	default 6 if F1C100S_FB_800x480
+	default 24
+	---help---
+		TCON0 DCLK divider (TCON_CLK_CTRL_REG bits 7:0).
+		For 480x272: 216MHz / 24 = 9.0 MHz exact dot clock.
+		For 800x480: 198MHz / 6 = 33 MHz.
+
+config F1C100S_FB_INV
+	int "IO polarity invert mask"
+	default 0
+	---help---
+		Invert signals (DCLK, DE, HSYNC, VSYNC). Default 0 (active high DE).
+
+config F1C100S_FB_BACKLIGHT_PWM
+	bool "Auto-enable RGB Backlight via PWM"
+	default y
+	depends on F1C100S_PWM
+	---help---
+		Automatically initialize and start PWM backlight on board bringup
+		when Framebuffer is enabled. For this board, PWM1 (PE6) drives
+		the AP3019AKTR step-up backlight circuit for the 40-pin RGB FPC.
+
+config F1C100S_FB_BACKLIGHT_DUTY
+	int "Backlight default duty cycle (percent)"
+	default 80
+	range 0 100
+	depends on F1C100S_FB_BACKLIGHT_PWM
+	---help---
+		Initial backlight brightness duty cycle percentage (0-100%).
+
+config F1C100S_FB_BPP
+	int "Bits per pixel"
+	default 16
+	range 16 32
+	---help---
+		Color depth: 16 (RGB565), 24 (RGB888), or 32 (ARGB8888)
+
+choice
+	prompt "Display Output"
+	default F1C100S_FB_TFT
+
+config F1C100S_FB_TFT
+	bool "TFT LCD (RGB)"
+	---help---
+		Output to TFT LCD panel via TCON0
+
+config F1C100S_FB_TV_PAL
+	bool "TV (PAL)"
+	---help---
+		Output to TV via TCON1+TVE in PAL format
+
+config F1C100S_FB_TV_NTSC
+	bool "TV (NTSC)"
+	---help---
+		Output to TV via TCON1+TVE in NTSC format
+
+endchoice
+
+config F1C100S_FB_RB_SWAP
+	bool "Swap Red and Blue channels (RB Swap)"
+	default y
+	depends on F1C100S_FB_TFT
+	---help---
+		Swap Red and Blue channels in TCON0 (bit 23 of TCON_T0_CTRL).
+		Enable when RGB LCD panel wiring causes Red and Blue to be reversed.
+
+config F1C100S_FB_DMA
+	bool "Framebuffer DMA Support"
+	default n
+	depends on F1C100S_DMA
+	---help---
+		Enable DMA for framebuffer updates.
+		Improves display refresh performance.
+
+config F1C100S_FB_DMA_CHAIN
+	bool "Framebuffer DMA Chain Mode"
+	default n
+	depends on F1C100S_FB_DMA
+	select F1C100S_DMA_CHAIN
+	---help---
+		Use descriptor chain for double-buffered display.
+		Enables smooth frame transitions.
+
+endmenu
+
+menu "F1C100s USB Configuration"
+	depends on F1C100S_USB
+
+config F1C100S_USB_DMA
+	bool "USB DMA Support"
+	default n
+	depends on F1C100S_DMA && (F1C100S_USBHOST || F1C100S_USBDEV)
+	---help---
+		Enable DMA for USB bulk transfers. When enabled,
+		transfers >= threshold bytes use DMA, smaller use PIO.
+
+config F1C100S_USB_DMA_THRESHOLD
+	int "USB DMA Threshold (bytes)"
+	default 64
+	depends on F1C100S_USB_DMA
+	---help---
+		Minimum transfer size to use DMA. Smaller transfers use PIO.
+
+config F1C100S_USB_DMA_CHAIN
+	bool "USB DMA Chain Mode"
+	default n
+	depends on F1C100S_USB_DMA
+	select F1C100S_DMA_CHAIN
+	---help---
+		Use descriptor chain for USB bulk transfers.
+		Reduces CPU overhead for large transfers.
+
+config F1C100S_USB_DMA_SG
+	bool "USB Scatter-Gather DMA"
+	default n
+	depends on F1C100S_USB_DMA_CHAIN
+	select F1C100S_DMA_SG
+	---help---
+		Enable scatter-gather for USB transfers.
+		Useful for fragmented buffer transfers.
+
+endmenu
+
+menu "F1C100s UART DMA Configuration"
+	depends on F1C100S_UART0 || F1C100S_UART1 || F1C100S_UART2
+
+config F1C100S_UART_DMA
+	bool "UART DMA Support"
+	default n
+	depends on F1C100S_DMA
+	---help---
+		Enable DMA for UART transfers.
+		Useful for high-speed serial communication.
+
+config F1C100S_UART_DMA_CHAIN
+	bool "UART DMA Chain Mode"
+	default n
+	depends on F1C100S_UART_DMA
+	select F1C100S_DMA_CHAIN
+	---help---
+		Use descriptor chain for UART DMA transfers.
+		Enables large buffer transfers without CPU intervention.
+
+endmenu
+
+config F1C100S_GPIO
+	bool
+	default y
+	---help---
+		GPIO support is always enabled on F1C100s
+
+config F1C100S_LRADC
+	bool "LRADC (ADC Buttons)"
+	default n
+	select INPUT
+	select INPUT_BUTTONS
+	---help---
+		Enable LRADC (Low Resolution ADC) driver for button input.
+		Uses ADC to detect multiple buttons through resistor divider network.
+		Do NOT enable on the F1C200S 小电脑 demo board: SW1/SW2/SW3 are
+		independent GPIOs (PE2/PE3/PE4), not an LRADC divider. Use
+		F1C100S_GPIO_BUTTONS instead.
+
+config F1C100S_GPIO_BUTTONS
+	bool "GPIO keys (PE2/PE3/PE4, active-low)"
+	default n
+	select ARCH_HAVE_BUTTONS
+	select ARCH_BUTTONS
+	select ARCH_HAVE_IRQBUTTONS
+	select ARCH_IRQBUTTONS
+	select INPUT
+	select INPUT_BUTTONS
+	select INPUT_BUTTONS_LOWER
+	select DEV_GPIO
+	---help---
+		On-board SW1/SW2/SW3 from SCH_F1C200S小电脑.pdf: each key is a
+		GPIO to GND with a 47k pull-up to 3.3V (active-low).
+		  SW1 L  = PE2
+		  SW2 CK = PE3
+		  SW3 R  = PE4
+		PE4 is only the key; ST7789 DC/RST are PE5/PE10.
+
+menu "F1C100s Boot Configuration"
+
+config F1C100S_DRAM_INIT
+	bool "Initialize DRAM in NuttX"
+	default n
+	---help---
+		Enable DRAM initialization in NuttX startup code.
+		Disable this if bootloader (awboot/FEL) already initialized DRAM.
+
+choice
+	prompt "JTAG Configuration"
+	default F1C100S_JTAG_DISABLE
+
+config F1C100S_JTAG_DISABLE
+	bool "Disable JTAG"
+	---help---
+		JTAG pins (PF0-PF5) are available for GPIO/SD Card use.
+
+config F1C100S_JTAG_ENABLE
+	bool "Enable JTAG"
+	depends on !F1C100S_SDIO
+	---help---
+		Enable JTAG on PF (suniv function 3, not 4):
+		PF0=TMS, PF1=TDI, PF3=TDO, PF5=TCK.
+		WARNING: JTAG and SD Card share PF pins, cannot be used together.
+
+endchoice
+
+config F1C100S_SPI_INTERRUPTS
+	bool "SPI Interrupt Mode"
+	default n
+	depends on F1C100S_SPI0 || F1C100S_SPI1
+	---help---
+		Enable interrupt-driven SPI transfers.
+		Currently not fully implemented, use DMA mode instead.
+
+config F1C100S_ST7789
+	bool "ST7789 240x240 SPI status panel"
+	default n
+	depends on F1C100S_SPI1
+	select DEV_GPIO
+	select LCD
+	select LCD_ST7789
+	select LCD_FRAMEBUFFER
+	select DRIVERS_VIDEO
+	select VIDEO_FB
+	select SPI_CMDDATA
+	---help---
+		ST7789 driver for BL status text (spec §2), on top of NuttX's
+		standard drivers/lcd/st7789.c + LCD_FRAMEBUFFER front end (so
+		it also shows up as /dev/fb0 for apps/examples/fb). SPI1 is
+		PE7=CS PE8=MOSI PE9=CLK (Function 4) -- confirmed against this
+		board's schematic and the F1C100S datasheet pin table; PA0-3
+		Function 6 is a different, electrically valid SPI1 mux option
+		on this silicon but on this board those 4 pins are wired to
+		the RGB panel's touchscreen instead. DC and RST are GPIOs
+		(defaults PE5/PE10), registered as named /dev/gpio devices
+		(open+ioctl, not raw pokes); DC is also what f1c100s_spi.c's
+		SPI_CMDDATA() toggles for the generic driver's command/data
+		framing.
+
+if F1C100S_ST7789
+
+config F1C100S_ST7789_DC_PORT
+	int "DC GPIO port (0=PA .. 4=PE 5=PF)"
+	default 4
+
+config F1C100S_ST7789_DC_PIN
+	int "DC GPIO pin"
+	default 5
+	range 0 31
+
+config F1C100S_ST7789_RST_PORT
+	int "Reset GPIO port (0=PA .. 4=PE 5=PF)"
+	default 4
+
+config F1C100S_ST7789_RST_PIN
+	int "Reset GPIO pin"
+	default 10
+	range 0 31
+
+config F1C100S_ST7789_FREQUENCY
+	int "ST7789 SPI frequency (unused; LCD_ST7789_FREQUENCY is the real one)"
+	default 8000000
+
+config F1C100S_ST7789_AP
+	bool "This build is the AP (not BL)"
+	default n
+	---help---
+		ST7789 always registers as /dev/fb0 (BL and AP never run at
+		the same time, so there is no minor-number conflict there).
+		The RGB LCD, which only exists in AP builds, always takes
+		/dev/fb1 -- its mere presence already tells BL and AP apart.
+		This flag only selects the status-screen title text
+		("F1C100s BL" vs "F1C100s AP"); set it in AP-role defconfigs.
+
+endif # F1C100S_ST7789
+
+config F1C100S_BOOTKV
+	bool "Boot KV state library (BL+AP spec §4)"
+	default n
+	depends on MTD
+	---help---
+		Dual-slot KV record in the 4 KiB SPI-NOR sector at
+		F1C100S_PART_KV_OFFSET. Shared by NuttX-BL and NuttX-AP
+		(fail_count, AP size/crc, active_flag). See f1c100s_bootkv.h
+		for the power-fail atomicity protocol.
+
+if F1C100S_BOOTKV
+
+config F1C100S_BOOT_FAIL_LIMIT
+	int "AP boot fail_count limit"
+	default 3
+	range 1 32
+	---help---
+		BL jumps to AP only while KV fail_count is below this
+		limit (spec §2). Reaching the limit stays in BL for
+		fastboot recovery instead of retrying a crashing AP.
+
+endif # F1C100S_BOOTKV
+
+endmenu
+
+endif # ARCH_CHIP_CUSTOM
