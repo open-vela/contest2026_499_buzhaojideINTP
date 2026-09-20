@@ -1,0 +1,8 @@
+  * 切换到 Mac / Linux 模式 (CDC-ECM 免驱直通):
+      echo ecm > /data/net_mode; reboot
+  * 切换到 Windows 模式 (RNDIS 兼容网卡):
+      echo rndis > /data/net_mode; reboot
+  * Windows 提示 : 若设备管理器出现黄色感叹号，右键更新驱动 ->
+    从计算机可用列表选取 -> 网络适配器 -> Microsoft -> Remote NDIS
+=================================================================
+

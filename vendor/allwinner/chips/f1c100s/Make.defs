@@ -1,0 +1,133 @@
+############################################################################
+# vendor/allwinner_f1c/chip/f1cxx/src/Make.defs
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+
+# We need to select arch Make.defs according to chip arch
+# eg: risc-v/Make.defs, armv8-m/Make.defs
+
+include arm/Make.defs
+
+# Specify our HEAD assembly file
+HEAD_ASRC = f1c100s_head.S
+
+# Assembly sources from common ARM and chip-specific
+# Note: arm_vectortab.S and arm_vectors.S are already included in arm/Make.defs
+
+# Specify our C code within this directory to be included
+
+# Core system files (always compiled)
+CHIP_CSRCS += f1c100s_start.c f1c100s_irq.c f1c100s_allocateheap.c
+CHIP_CSRCS += f1c100s_clock.c f1c100s_mmu.c f1c100s_dram.c f1c100s_gpio.c
+CHIP_CSRCS += f1c100s_boot.c f1c100s_softreset.c f1c100s_vectors.c
+CHIP_CSRCS += f1c100s_idle.c
+
+# UART drivers (conditional on specific UART selection)
+ifeq ($(CONFIG_F1C100S_UART0),y)
+CHIP_CSRCS += f1c100s_uart.c
+endif
+
+ifeq ($(CONFIG_F1C100S_UART1),y)
+CHIP_CSRCS += f1c100s_uart.c
+endif
+
+ifeq ($(CONFIG_F1C100S_UART2),y)
+CHIP_CSRCS += f1c100s_uart.c
+endif
+
+# Timer (always needed for system tick)
+CHIP_CSRCS += f1c100s_timerisr.c
+
+# SPI driver
+ifneq ($(CONFIG_F1C100S_SPI0)$(CONFIG_F1C100S_SPI1),)
+CHIP_CSRCS += f1c100s_spi.c
+endif
+
+# I2C driver
+ifeq ($(CONFIG_F1C100S_I2C0),y)
+CHIP_CSRCS += f1c100s_i2c.c
+endif
+
+ifeq ($(CONFIG_F1C100S_I2C1),y)
+CHIP_CSRCS += f1c100s_i2c.c
+endif
+
+ifeq ($(CONFIG_F1C100S_I2C2),y)
+CHIP_CSRCS += f1c100s_i2c.c
+endif
+
+# SDIO driver
+ifeq ($(CONFIG_F1C100S_SDIO),y)
+CHIP_CSRCS += f1c100s_sdio.c
+endif
+
+# Audio Codec driver
+ifeq ($(CONFIG_F1C100S_AUDIO),y)
+CHIP_CSRCS += f1c100s_audio.c
+endif
+
+# DMA driver
+ifeq ($(CONFIG_F1C100S_DMA),y)
+CHIP_CSRCS += f1c100s_dma.c
+endif
+
+# Watchdog Timer driver
+ifeq ($(CONFIG_F1C100S_WDT),y)
+CHIP_CSRCS += f1c100s_wdt.c f1c100s_wdtfeed.c
+endif
+
+# Framebuffer driver
+ifeq ($(CONFIG_F1C100S_FB),y)
+CHIP_CSRCS += f1c100s_fb.c
+endif
+
+# USB Device driver
+ifeq ($(CONFIG_F1C100S_USBDEV),y)
+CHIP_CSRCS += f1c100s_usbdev.c
+endif
+
+# USB Host driver
+ifeq ($(CONFIG_F1C100S_USBHOST),y)
+CHIP_CSRCS += f1c100s_usbhost.c
+endif
+
+# USB DMA driver
+ifeq ($(CONFIG_F1C100S_USB_DMA),y)
+CHIP_CSRCS += f1c100s_usb_dma.c
+endif
+
+# LRADC driver
+ifeq ($(CONFIG_F1C100S_LRADC),y)
+CHIP_CSRCS += f1c100s_lradc.c
+endif
+
+# PWM driver
+ifeq ($(CONFIG_F1C100S_PWM),y)
+CHIP_CSRCS += f1c100s_pwm.c
+endif
+
+# Oneshot Timer driver
+ifeq ($(CONFIG_F1C100S_ONESHOT),y)
+CHIP_CSRCS += f1c100s_oneshot.c
+endif
+
+# Boot KV (dual-slot NOR state, BL+AP spec §4)
+ifeq ($(CONFIG_F1C100S_BOOTKV),y)
+CHIP_CSRCS += f1c100s_bootkv.c
+CHIP_CSRCS += f1c100s_bootctl.c
+endif

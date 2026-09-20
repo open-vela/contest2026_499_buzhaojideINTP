@@ -1,0 +1,17 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+if MTD_AT24XX
+
+config AT24XX_MTD_BLOCKSIZE
+	int "AT24XX MTD block size"
+	default 64
+	---help---
+		Block size for the AT24XX MTD driver. For AT24C256, the page size
+		is 64 bytes. Setting this to the page size avoids the warning about
+		assuming block size equals page size.
+
+endif # MTD_AT24XX
+
